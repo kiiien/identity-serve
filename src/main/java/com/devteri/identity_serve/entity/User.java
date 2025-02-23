@@ -3,6 +3,7 @@ package com.devteri.identity_serve.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.validation.constraints.Size;
 
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ public class User {
     @jakarta.persistence.Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
     private String username;
     private String password;
     private String email;

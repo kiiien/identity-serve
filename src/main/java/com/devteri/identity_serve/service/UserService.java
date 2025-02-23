@@ -1,48 +1,49 @@
 package com.devteri.identity_serve.service;
 
 import com.devteri.identity_serve.dtos.CreateUserDtos;
+import com.devteri.identity_serve.dtos.UserDtos;
 import com.devteri.identity_serve.entity.User;
+import com.devteri.identity_serve.exception.AppException;
+import com.devteri.identity_serve.exception.ErrorCode;
+import com.devteri.identity_serve.mapper.UserMapper;
 import com.devteri.identity_serve.reponsitory.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
+    UserMapper userMapper;
 
-    public User create(CreateUserDtos request) {
-        User user = new User();
+    public UserDtos create(CreateUserDtos request) {
 
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setEmail(request.getEmail());
-        user.setDateBirth(request.getDateBirth());
-        user.setFullName(request.getFullName());
-
-        return userRepository.save(user);
+        if(userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        User user = userMapper.toUser(request);
+        return userMapper.toUserDtos(userRepository.save(user));
     }
 
     public List<User> getAll(){
         return userRepository.findAll();
     }
 
-    public User getUserById(String id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public UserDtos getUserById(String id) {
+        return userMapper.toUserDtos(userRepository.findById(id).orElseThrow(() -> new RuntimeException("not found user")));
     }
 
-    public User update(String id, CreateUserDtos request) {
-        User user = getUserById(id);
+    public UserDtos update(String id, CreateUserDtos request) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("not found user"));
 
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setEmail(request.getEmail());
-        user.setDateBirth(request.getDateBirth());
-        user.setFullName(request.getFullName());
+        userMapper.updateUser(user, request);
 
-        return userRepository.save(user);
+        return userMapper.toUserDtos(userRepository.save(user));
     }
 
     public void delete(String id) {

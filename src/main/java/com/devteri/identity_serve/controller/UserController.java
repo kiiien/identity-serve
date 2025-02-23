@@ -1,23 +1,31 @@
 package com.devteri.identity_serve.controller;
 
 import com.devteri.identity_serve.dtos.CreateUserDtos;
+import com.devteri.identity_serve.dtos.UserDtos;
 import com.devteri.identity_serve.entity.User;
+import com.devteri.identity_serve.exception.ApiResponse;
 import com.devteri.identity_serve.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-public class UserController {
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 
-    @Autowired
-    private UserService userService;
+public class UserController {
+    UserService userService;
 
     @PostMapping
-    User createUser(@RequestBody CreateUserDtos request) {
-        return userService.create(request);
+    ApiResponse<UserDtos> createUser(@RequestBody @Valid CreateUserDtos request) {
+        ApiResponse<UserDtos> response = new ApiResponse<>();
+        response.setResult(userService.create(request));
+        return response;
     }
 
     @GetMapping
@@ -26,12 +34,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    User getUserById(@PathVariable("id") String id){
+    UserDtos getUserById(@PathVariable("id") String id){
         return  userService.getUserById(id);
     }
 
     @PutMapping("/{id}")
-    User update(@PathVariable("id") String id, @RequestBody CreateUserDtos request) {
+    UserDtos update(@PathVariable("id") String id, @RequestBody CreateUserDtos request) {
         return userService.update(id, request);
     }
 
